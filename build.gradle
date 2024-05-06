@@ -1,0 +1,53 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.kotlin_version = "1.5.21"
+    ext.commonbusiness_version = "0.0.18"
+    ext.gallery_version = "0.0.10"
+    ext.core_version="1.1.43"
+    ext.upgrade_version = "0.0.6"
+    ext.crash_report_version="0.0.1"
+    ext.dy_version = "0.1.9.6"
+    ext.media_version = "0.0.15"
+    ext.liteav_version = "0.0.37"
+    ext.cjffmpeg_version = "1.0.15"
+    ext.compose_version = '1.4.3'
+
+    dependencies {
+        classpath 'com.github.hufeiyang.Android-AppLifecycleMgr:applifecycle-plugin:1.0.3'
+        classpath "com.alibaba:arouter-register:1.0.2"
+    }
+}
+plugins {
+    id 'com.android.application' version '7.4.2' apply false
+    id 'com.android.library' version '7.4.2' apply false
+    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
+}
+
+task bumpVersion() {
+    def versionPropsFile = file('gradle.properties')
+    def versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    def codeBumped = versionProps['v_versionName']
+    def codes = codeBumped.replace('.', '-').split("-")
+    def result = ""
+    for (int i = 0; i < codes.length; i++) {
+        int num = codes[i] as int
+        if (i == 0) {
+            result += num
+        } else {
+            if (num < 10) {
+                result += "0" + num
+            } else {
+                result += num
+            }
+        }
+    }
+    if (result != versionProps['v_versionCode']) {
+        versionProps['v_versionCode'] = result.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+        println("修改了")
+    } else {
+        println("一样")
+    }
+}

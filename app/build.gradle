@@ -1,0 +1,202 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.hm.plugin.lifecycle'
+    id 'com.alibaba.arouter'
+    id 'kotlin-kapt'
+    id 'kotlin-parcelize'
+}
+
+android {
+    namespace 'com.tools.talkbacktool'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.tools.talkbacktool"
+        minSdk 24
+        targetSdk 33
+        versionCode v_versionCode as Integer
+        versionName v_versionName
+        flavorDimensions "environment"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+
+        kapt {
+            arguments {
+                arg("AROUTER_MODULE_NAME", project.getName())
+            }
+        }
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+    }
+    signingConfigs {
+        release {
+            storeFile file("tk.jks")
+            keyAlias "changjia"
+            storePassword "cj2019"
+            keyPassword "cj2019"
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+
+        debug {
+            storeFile file("tk.jks")
+            keyAlias "changjia"
+            storePassword "cj2019"
+            keyPassword "cj2019"
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    productFlavors {
+        qa {
+            buildConfigField("String", "BASE_URL", "\"https://test.aishutong.cc:6318/aishutong/api/\"")
+            //buildConfigField("String", "BASE_URL", "\"https://test.aishutong.cc/aishutong/api/\"")/
+            buildConfigField("String", "H5_BASE_URL", "\"https://h5.aishutong.vip\"")
+            buildConfigField("String", "CHANNEL", "\"测试\"")
+        }
+        pre {
+            buildConfigField("String", "BASE_URL", "\"https://testapi.aishutong.vip/aishutong/api/\"")
+            buildConfigField("String", "H5_BASE_URL", "\"https://h5.aishutong.vip\"")
+            buildConfigField("String", "CHANNEL", "\"预发\"")
+        }
+
+        prod {
+            buildConfigField("String", "BASE_URL", "\"https://web.aishutong.cc:6318/aishutong/api/\"")
+            buildConfigField("String", "H5_BASE_URL", "\"https://h5.aishutong.vip\"")
+            buildConfigField("String", "CHANNEL", "\"正式\"")
+        }
+    }
+
+
+    applicationVariants.all { variant ->
+        variant.mergeAssets.doLast {
+            //删除assets文件夹下的所有zip文件，或者指定文件。(删除文件夹：文件夹名/**/*)
+            delete(fileTree(dir: variant.mergeAssets.outputDir, includes: ['A.json', '*.zip', 'dirs/**/*']))
+        }
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                // 文件名修改
+                def fileName = "${rootProject.getName()}-${output.processResources.variantName}-v${project.v_versionName.replaceAll("\"", "")}-${variant.flavorName}-${releaseTime()}.apk"
+                output.outputFileName = fileName
+            }
+        }
+    }
+
+    packagingOptions {
+        pickFirst 'lib/armeabi/libtxsdl.so'
+        pickFirst 'lib/arm64-v8a/libtxffmpeg.so'
+        pickFirst 'lib/armeabi-v7a/libtxffmpeg.so'
+        pickFirst 'lib/armeabi/libtxplayer.so'
+        pickFirst 'lib/armeabi-v7a/libtxsdl.so'
+        pickFirst 'lib/armeabi/libliteavsdk.so'
+        pickFirst 'lib/arm64-v8a/libtxplayer.so'
+        pickFirst 'lib/armeabi/libtxffmpeg.so'
+        pickFirst 'lib/armeabi-v7a/libtxplayer.so'
+        pickFirst 'lib/armeabi-v7a/libliteavsdk.so'
+        pickFirst 'lib/arm64-v8a/libtxsdl.so'
+        pickFirst 'lib/arm64-v8a/libliteavsdk.so'
+        pickFirst 'lib/arm64-v8a/libtxsoundtouch.so'
+        pickFirst 'lib/armeabi-v7a/libtxsoundtouch.so'
+    }
+}
+
+
+def static releaseTime() {
+    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone(" "))
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation "androidx.room:room-runtime:2.3.0"
+    //外面依赖的自己加上
+    kapt "androidx.room:room-compiler:2.3.0"
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:2.3.0"
+
+    implementation "com.cj.common:core:$core_version"
+    implementation "com.cj.upgrade:upgradelib:$upgrade_version"
+    implementation "com.cj.commonbusiness:business:$commonbusiness_version"
+    implementation "com.cj.player:videoPlayer:$media_version"
+    //crashreport
+    implementation "com.cj.crashreport:crashReport:$crash_report_version"
+
+    kapt 'com.alibaba:arouter-compiler:1.5.2'
+    implementation "com.github.chuckerteam.chucker:library:3.5.2"
+
+    //音视频
+    implementation 'com.github.microshow:RxFFmpeg:4.9.0'
+    implementation "com.cj.liveav:liveav:$liteav_version"
+    implementation "com.cj.common:cjffmpeg:$cjffmpeg_version"
+    implementation 'com.github.yyued:SVGAPlayer-Android:2.6.1'
+
+    implementation "com.bytedance.ies.ugc.aweme:opensdk-china-external:$dy_version"
+    implementation "com.bytedance.ies.ugc.aweme:opensdk-common:$dy_version"
+
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android:+'
+    implementation 'com.github.shichaohui:WXShareMultiImage:v2.0.1'
+
+
+    implementation 'com.alibaba:fastjson:1.1.72.android'
+
+    //阿里云
+    implementation 'com.aliyun.dpa:oss-android-sdk:2.9.5'
+    kapt "androidx.room:room-compiler:2.3.0"
+
+
+    //图片转视频
+    implementation 'com.github.MasayukiSuda:ImageToVideoAndroid:v0.1.0'
+}

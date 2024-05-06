@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://repo1.maven.org/maven2/' }
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://repo1.maven.org/maven2/' }
+        maven {
+            allowInsecureProtocol = true
+            url "http://cjmaven.chanka666.com/repository/android/"
+        }
+        maven { url 'https://artifact.bytedance.com/repository/AwemeOpenSDK' }
+    }
+}
+
+
+rootProject.name = "TalkBackTool"
+include ':app'
